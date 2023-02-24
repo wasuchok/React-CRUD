@@ -1,9 +1,9 @@
 import { Container, Box, CssBaseline, Typography, Grid, TextField, Button } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios'
 import { api } from './services/api'
 import Swal from 'sweetalert2'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const UserCreate = () => {
     const [fname, setFname] = useState('')
@@ -12,67 +12,78 @@ const UserCreate = () => {
     const [email, setEmail] = useState('')
     const [avatar, setAvatar] = useState('')
 
+    useEffect(() => {
+        show_user()
+    },[])
+
     const navigate = useNavigate()
 
-    const handleSubmit = async event => {
-        event.preventDefault()
-       await axios.post(`${api}/users/create`, {
-            "fname" : fname,
-            "lname" : lname,
-            "username" : username,
-            "password" : "1234",
-            "email" : email,
-            "avatar" : avatar
-        }).then( async (response) => {
-            if(response.data.status == "ok") {
-               await Swal.fire({
-                    title: 'เพิ่มข้อมูลสำเร็จ!',
-                    text: 'เรียบร้อย',
-                    icon: 'success'
-                  })
-                 await navigate("/")
-            }
+    const { id } = useParams() 
+
+    const show_user = async () => {
+        await axios.get(`${api}/users/${id}`)
+        .then((response) => {
+            setFname(response.data.user.fname)
+            setLname(response.data.user.lname)
+            setUsername(response.data.user.username)
+            setEmail(response.data.user.email)
+            setAvatar(response.data.user.avatar)
         }).catch((err) => {
             console.log(err)
         })
     }
 
+    const edit_user = async (event) => {
+        event.preventDefault()
+       await axios.put(`${api}/users/update`,{
+            "id" : id,
+            "fname" : fname,
+            "lname" : lname,
+            "username" : username,
+            "email" : email,
+            "avatar" : avatar
+        }).then((response) => {
+            console.log(response)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
 
   return (
     <>
         <CssBaseline />
         <Container maxWidth="sm" sx={{ p:2 }}>
             <Typography variant='h6' gutterBottom component="div">
-                เพิ่มผู้ใช้
+                แก้ไขผู้ใช้
             </Typography>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={edit_user}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
-                        <TextField id="fname" label="ชื่อจริง" variant='outlined'
+                        <TextField id="fname" label="ชื่อจริง" variant='outlined' value={fname}
                         fullWidth required
                         onChange={(e) => setFname(e.target.value)}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <TextField id="lname" label="นามสกุล" variant='outlined'
+                        <TextField id="lname" label="นามสกุล" variant='outlined' value={lname}
                         fullWidth required
                         onChange={(e) => setLname(e.target.value)}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <TextField id="username" label="ชื่อผู้ใช้" variant='outlined'
+                        <TextField id="username" label="ชื่อผู้ใช้" variant='outlined' value={username}
                         fullWidth required
                         onChange={(e) => setUsername(e.target.value)}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <TextField id="email" label="อีเมล" variant='outlined'
+                        <TextField id="email" label="อีเมล" variant='outlined' value={email}
                         fullWidth required
                         onChange={(e) => setEmail(e.target.value)}
                         />
                     </Grid>
                     <Grid item xs={12} sm={12}>
-                        <TextField id="avatar" label="รูปโปรไฟล์" variant='outlined'
+                        <TextField id="avatar" label="รูปโปรไฟล์" variant='outlined' value={avatar}
                         fullWidth required
                         onChange={(e) => setAvatar(e.target.value)}
                         />
